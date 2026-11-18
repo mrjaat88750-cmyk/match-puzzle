@@ -13,12 +13,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Android SDK
-        run: |
-          export ANDROID_HOME=/root/android-sdk
-          mkdir -p $ANDROID_HOME/cmdline-tools
-          echo "Android SDK path configured"
-
       - name: Setup export templates
         run: |
           mkdir -p ~/.local/share/godot/export_templates
@@ -26,9 +20,17 @@ jobs:
             cp -r /root/.local/share/godot/export_templates/* ~/.local/share/godot/export_templates/ || true
           fi
 
-      - name: Create default export preset
+      - name: Configure Editor Settings for Android SDK
         run: |
           mkdir -p ~/.config/godot
+          # Godot के एडिटर सेटिंग्स में Android SDK का सही पाथ सेट करना
+          cat << EOF > ~/.config/godot/editor_settings-4.tres
+          [resource]
+          export/android/android_sdk_path = "/root/.android/sdk"
+          EOF
+
+      - name: Create default export preset
+        run: |
           cat << EOF > export_presets.cfg
           [preset.0]
 
@@ -69,7 +71,6 @@ jobs:
 
       - name: Export Android APK
         run: |
-          export ANDROID_HOME=/root/android-sdk
           godot --headless --verbose --export-release "Android" build/match-puzzle.apk
 
       - name: Upload APK Artifact
