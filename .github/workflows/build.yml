@@ -1,0 +1,19 @@
+name: Build Godot Android APK
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Export to Android
+        uses: firebelley/godot-action@v1.4.0
+        with:
+          godot_version: 4.3 # अपने प्रोजेक्ट वाला Godot वर्शन यहाँ लिखें (जैसे 4.2 या 4.3)
+          name: match-puzzle
+          android: true
+          
