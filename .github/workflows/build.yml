@@ -2,7 +2,7 @@ name: Build Godot Android APK
 
 on:
   push:
-    branches: [main]
+    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
@@ -10,8 +10,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,42 +36,30 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/godot"
           cd "$RUNNER_TEMP/godot"
-
-          wget -q \
-            https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
-
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
           unzip -q Godot_v4.3-stable_linux.x86_64.zip
-
           mv Godot_v4.3-stable_linux.x86_64 godot
           chmod +x godot
-
-          echo "$RUNNER_TEMP/godot" >> "$GITHUB_PATH"
+          echo "$RUNNER_TEMP/godot" >> $GITHUB_PATH
 
       - name: Install Godot Android Templates
         run: |
           mkdir -p ~/.local/share/godot/export_templates/4.3.stable
-
-          wget -q \
-            https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz \
-            -O templates.tpz
-
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz -O templates.tpz
           mkdir templates_temp
           unzip -q templates.tpz -d templates_temp
-
-          cp -r templates_temp/templates/. \
-            ~/.local/share/godot/export_templates/4.3.stable/
+          cp -r templates_temp/templates/* ~/.local/share/godot/export_templates/4.3.stable/
 
       - name: Configure Android SDK and Java
         run: |
           mkdir -p ~/.config/godot
-
-          cat > ~/.config/godot/editor_settings-4.tres <<EOF2
+          cat << EOF > ~/.config/godot/editor_settings-4.tres
           [gd_resource type="EditorSettings" format=3]
 
           [resource]
           export/android/android_sdk_path = "$ANDROID_HOME"
           export/android/java_sdk_path = "$JAVA_HOME"
-          EOF2
+          EOF
 
       - name: Validate project
         run: |
@@ -82,13 +69,10 @@ jobs:
       - name: Export Android Debug APK
         run: |
           mkdir -p build
-
           godot --headless \
             --path . \
             --export-debug "Android" \
             build/match-puzzle.apk
-
-          test -s build/match-puzzle.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -97,4 +81,4 @@ jobs:
           path: build/match-puzzle.apk
           if-no-files-found: error
           retention-days: 14
-EOF
+          
